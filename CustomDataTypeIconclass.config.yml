@@ -1,0 +1,26 @@
+plugin:
+  name: custom-data-type-iconclass
+  version: 0.1
+  url: https://github.com/programmfabrik/easydb-custom-data-type-iconclass
+  displayname:
+    de-DE: Iconclass-Verknüpfung
+    en-US: Iconclass-Referencing
+  info:
+    de-DE: Stellt Verknüpfungen mit dem Normdatendienst Iconclass her.
+    en-US: Use for references to entities of Iconclass-AuthorityFile.
+  server:
+    api-version:
+      require: 1
+  webfrontend:
+    url: custom-data-type-iconclass.js
+    l10n: l10n/
+    css: custom-data-type-iconclass.css
+custom_types:
+  iconclass:
+    mapping:
+      conceptName:
+        type: text
+      conceptURI:
+        type: text
+      conceptAncestors:
+        type: text
