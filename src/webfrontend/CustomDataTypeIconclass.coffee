@@ -156,7 +156,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   suggestionsLabel = suggestion.txt[activeFrontendLanguage]
                 else
                   suggestionsLabel = suggestion.txt.de
-                suggestionsLabel = suggestion.n + ' ' + suggestionsLabel
+                suggestionsLabel = suggestion.n + ' - ' + suggestionsLabel
                 suggestionsURI = 'http://iconclass.org/' + suggestion.n
                 item =
                   text: suggestionsLabel
@@ -195,7 +195,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                     cdata.conceptName = iconclassInfo?.txt[activeFrontendLanguage]
                   else
                     cdata.conceptName = iconclassInfo?.txt?.de
-                  cdata.conceptName = iconclassInfo.n + ' ' + cdata.conceptName
+                  cdata.conceptName = iconclassInfo.n + ' - ' + cdata.conceptName
 
                   # update the layout in form
                   that.__updateResult(cdata, layout, opts)

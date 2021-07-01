@@ -74,7 +74,7 @@ class ez5.IconclassUtil
     else
       standardTextString = object.txt[Object.keys(object.txt)[0]]
 
-    standardTextString = object.n + ' ' + standardTextString
+    standardTextString = object.n + ' - ' + standardTextString
 
     # 2. L10N
     #  give l10n-languages the easydb-language-syntax
@@ -83,7 +83,7 @@ class ez5.IconclassUtil
       shortenedLanguage = l10nObjectKey.split('-')[0]
       # add to l10n
       if object.txt[shortenedLanguage]
-        l10nObject[l10nObjectKey] = object.n + ' ' + object.txt[shortenedLanguage]
+        l10nObject[l10nObjectKey] = object.n + ' - ' + object.txt[shortenedLanguage]
 
     _standard.l10ntext = l10nObject
 
