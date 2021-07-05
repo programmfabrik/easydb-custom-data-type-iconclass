@@ -25,7 +25,7 @@ all: build
 
 include easydb-library/tools/base-plugins.make
 
-build: code
+build: code buildinfojson
 
 code: $(subst .coffee,.coffee.js,${COFFEE_FILES}) $(L10N)
 	mkdir -p build
