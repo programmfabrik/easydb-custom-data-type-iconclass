@@ -219,11 +219,8 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               # lock standard in savedata
                               that.cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that.context, iconclassInfo, that.cdata, false
 
-                              if iconclassInfo?.txt[that.additionalOpts.activeFrontendLanguage]
-                                that.cdata.conceptName = iconclassInfo?.txt[that.additionalOpts.activeFrontendLanguage]
-                              else
-                                that.cdata.conceptName = iconclassInfo?.txt?.de
-                              that.cdata.conceptName = iconclassInfo.n + ' - ' + that.cdata.conceptName
+                              # lock conceptName in savedata
+                              cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
 
                               # update form
                               CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)

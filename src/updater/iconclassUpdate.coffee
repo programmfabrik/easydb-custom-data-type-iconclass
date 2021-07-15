@@ -123,7 +123,7 @@ class iconclassUpdate
                         else
                           updatedICONCLASScdata.conceptName = data.txt[Object.keys(data.txt)[0]]
 
-                    updatedICONCLASScdata.conceptName = updatedICONCLASScdata.conceptName
+                    updatedICONCLASScdata.conceptName = data.n + ' - ' + updatedICONCLASScdata.conceptName
 
                     # _standard & _fulltext
                     updatedICONCLASScdata._standard = ez5.IconclassUtil.getStandardTextFromObject null, data, cdataFromObjectsMap, databaseLanguages
@@ -150,7 +150,6 @@ class iconclassUpdate
     )
 
   __hasChanges: (objectOne, objectTwo) ->
-    console.error "f:__hasChanges"
     for key in ["conceptName", "conceptURI", "_standard", "_fulltext", "conceptAncestors", "frontendLanguage"]
       if not CUI.util.isEqual(objectOne[key], objectTwo[key])
         return true

@@ -37,6 +37,32 @@ class ez5.IconclassUtil
 
     return html
 
+  @getConceptNameFromObject: (object, cdata) ->
+
+    if cdata?.frontendLanguage
+        if cdata?.frontendLanguage?.length == 2
+          activeFrontendLanguage = cdata.frontendLanguage
+
+    if Array.isArray(object)
+      object = object[0]
+
+    conceptName = ''
+
+    # build standard upon prefLabel!
+    # 1. TEXT
+    if object.txt[activeFrontendLanguage]
+      conceptName = object.txt[activeFrontendLanguage]
+    # else take first preflabel..
+    else if iconclassInfo?.txt?.de
+      conceptName = object.txt.de
+    else if iconclassInfo?.txt?.en
+      conceptName = object.txt.en
+    else
+      conceptName = object.txt[Object.keys(object.txt)[0]]
+
+    conceptName = object.n + ' - ' + conceptName
+
+    return conceptName
 
   @getStandardTextFromObject: (context, object, cdata, databaseLanguages = false) ->
 

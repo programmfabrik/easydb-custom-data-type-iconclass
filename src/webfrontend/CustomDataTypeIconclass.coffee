@@ -191,11 +191,8 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   # lock standard in savedata
                   cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
 
-                  if iconclassInfo?.txt[activeFrontendLanguage]
-                    cdata.conceptName = iconclassInfo?.txt[activeFrontendLanguage]
-                  else
-                    cdata.conceptName = iconclassInfo?.txt?.de
-                  cdata.conceptName = iconclassInfo.n + ' - ' + cdata.conceptName
+                  # lock conceptName in savedata
+                  cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
 
                   # update the layout in form
                   that.__updateResult(cdata, layout, opts)
