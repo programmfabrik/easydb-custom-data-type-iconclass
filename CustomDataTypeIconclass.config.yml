@@ -17,6 +17,11 @@ plugin:
     css: custom-data-type-iconclass.css
 custom_types:
   iconclass:
+    update:
+      script: build/updater/iconclass-update.js
+      timeout: 60
+      batch_size: 100
+      interval_base_config: update_interval_iconclass.days
     mapping:
       conceptName:
         type: text
@@ -24,3 +29,16 @@ custom_types:
         type: text
       conceptAncestors:
         type: text
+base_config:
+  - name: update_interval_iconclass
+    group: update_custom_data_type
+    parameters:
+      days:
+        type: int
+        min: 0
+        default: 0
+        position: 0
+      default_language:
+        type: text
+        default: 'de'
+        position: 1

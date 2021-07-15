@@ -10,6 +10,8 @@ This is a plugin for [easyDB 5](http://5.easydb.de/) with Custom Data Type `Cust
 
 The Plugins uses the mechanisms from <http://iconclass.org/help/lod> for the communication with Iconclass.
 
+Note: For technical reasons, the API requests run via a proxy at the central office of the joint library network ("Verbundzentrale des Gemeinsamen Bibliotheksverbundes").
+
 ## configuration
 
 As defined in `CustomDataTypeIconclass.config.yml` this datatype can be configured:
