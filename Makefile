@@ -12,7 +12,7 @@ INSTALL_FILES = \
 	$(WEB)/l10n/it-IT.json \
 	$(JS) \
 	$(CSS) \
-	CustomDataTypeIconclass.config.yml \
+	manifest.yml \
 	build/updater/iconclass-update.js
 
 COFFEE_FILES = easydb-library/src/commons.coffee \
