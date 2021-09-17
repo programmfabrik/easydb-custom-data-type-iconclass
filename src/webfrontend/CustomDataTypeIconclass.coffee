@@ -59,8 +59,19 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
   #######################################################################
   # make searchfilter for expert-search
   #######################################################################
-  getSearchFilter: (data) ->
+  getSearchFilter: (data, key=@name()) ->
       that = @
+
+      # search for empty values
+      if data[key+":unset"]
+          filter =
+              type: "in"
+              fields: [ @fullName()+".conceptName" ]
+              in: [ null ]
+          filter._unnest = true
+          filter._unset_filter = true
+          return filter
+
       # popup with tree: find all records which have the given uri in their ancestors
       filter =
           type: "complex"
