@@ -111,8 +111,7 @@ class ez5.IconclassUtil
       if object.txt[shortenedLanguage]
         l10nObject[l10nObjectKey] = object.n + ' - ' + object.txt[shortenedLanguage]
 
-    _standard.l10ntext = l10nObject
-    _standard.text = standardTextString
+    _standard.l10ntext = l10nObject    
 
     return _standard
 
