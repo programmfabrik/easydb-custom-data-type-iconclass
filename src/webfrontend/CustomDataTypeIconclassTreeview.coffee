@@ -108,7 +108,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
 
     constructor: (@opts={}, @additionalOpts={}) ->
 
-        super(@opts)
+        super()
 
         @prefLabel = @additionalOpts.prefLabel
         @uri = @additionalOpts.uri
