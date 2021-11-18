@@ -212,6 +212,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               # add own uri to ancestor-uris
                               that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
 
+                              console.warn @, that, iconclassInfo
                               # lock conceptURI in savedata
                               that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
                               # lock conceptFulltext in savedata
@@ -220,7 +221,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               that.cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that.context, iconclassInfo, that.cdata, false
 
                               # lock conceptName in savedata
-                              cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
+                              that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
 
                               # update form
                               CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)
