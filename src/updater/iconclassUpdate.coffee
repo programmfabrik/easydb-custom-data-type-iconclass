@@ -1,7 +1,8 @@
 class iconclassUpdate
 
   __start_update: ({server_config, plugin_config}) ->
-      # Check if DANTE-API is fully available. This will take at least 10 seconds. Dont panic.
+      # Check if Iconclass-API is fully available. This will take at least 10 seconds. Dont panic.
+      console.error "iconclass start_update"
       testURL = 'https://jsontojsonp.gbv.de/?url=http%3A%2F%2Ficonclass.org%2F1.json'
       availabilityCheck_xhr = new (CUI.XHR)(url: testURL)
       availabilityCheck_xhr.start()
@@ -19,6 +20,7 @@ class iconclassUpdate
       )
 
   __updateData: ({objects, plugin_config, state}) ->
+    console.error "__updateData"
     that = @
     objectsMap = {}
     iconclassUris = []
@@ -43,6 +45,8 @@ class iconclassUpdate
       objectsMap[ICONCLASSUri].push(object)
       iconclassUris.push(ICONCLASSUri)
 
+    console.error "iconclassUris", iconclassUris
+
     if iconclassUris.length == 0
       return ez5.respondSuccess({payload: []})
 
@@ -64,6 +68,7 @@ class iconclassUpdate
     for ICONCLASSUri, key in iconclassUris
       do(key, ICONCLASSUri) ->
         originalICONCLASSUri = ICONCLASSUri
+        console.error "originalICONCLASSUri", originalICONCLASSUri
         ICONCLASSUri = 'https://jsontojsonp.gbv.de/?url='  + CUI.encodeURIComponentNicely(ICONCLASSUri) + '.json'
         growingTimeout = key * 100
         setTimeout ( ->
@@ -108,6 +113,7 @@ class iconclassUpdate
                           if data['txt'][cdataFromObjectsMap.frontendLanguage]
                             if data['txt']?[cdataFromObjectsMap.frontendLanguage]
                               updatedICONCLASScdata.conceptName = data['txt'][cdataFromObjectsMap.frontendLanguage]
+
                     # if no conceptName is given yet (f.e. via scripted imports..)
                     #   --> choose a label and prefer the configured default language
                     if ! updatedICONCLASScdata?.conceptName
@@ -124,6 +130,7 @@ class iconclassUpdate
                           updatedICONCLASScdata.conceptName = data.txt[Object.keys(data.txt)[0]]
 
                     updatedICONCLASScdata.conceptName = data.n + ' - ' + updatedICONCLASScdata.conceptName
+                    console.error "updatedICONCLASScdata.conceptName", updatedICONCLASScdata.conceptName
 
                     # _standard & _fulltext
                     updatedICONCLASScdata._standard = ez5.IconclassUtil.getStandardTextFromObject null, data, cdataFromObjectsMap, databaseLanguages
