@@ -11,7 +11,7 @@ class iconclassUpdate
             state: {
                 "start_update": new Date().toUTCString()
                 "databaseLanguages" : server_config.base.system.languages.database
-                "default_language" : server_config.base.system.update_interval_dante.default_language
+                "default_language" : server_config.base.system.update_interval_iconclass.default_language
             }
           })
         else
@@ -49,104 +49,101 @@ class iconclassUpdate
     timeout = plugin_config.update?.timeout or 0
     timeout *= 1000 # The configuration is in seconds, so it is multiplied by 1000 to get milliseconds.
 
-    # unique dante-uris
+    # unique iconclass-uris
     iconclassUris = iconclassUris.filter((x, i, a) => a.indexOf(x) == i)
 
     objectsToUpdate = []
 
-    # prepare a request for each dante-uri
-    xhrPromises = []
-    for ICONCLASSUri, key in iconclassUris
-      deferred = new CUI.Deferred()
-      xhrPromises.push deferred
+    # update the uri's one after the other
+    chunkWorkPromise = CUI.chunkWork.call(@,
+      items: iconclassUris
+      chunk_size: 1
+      call: (items) =>
+        #for uri in items
+        uri = items[0]
+        #console.error "uri", uri
+        originalUri = items[0]
+        uriEncoded = uri.replace(/ /g, "%20")
+        uriEncoded = uriEncoded.replace(/,/g, "%2C")
+        uri = 'https://jsontojsonp.gbv.de/?url='  + CUI.encodeURIComponentNicely(uriEncoded) + '.json'
 
-    # fire requests and parse result
-    for ICONCLASSUri, key in iconclassUris
-      do(key, ICONCLASSUri) ->
-        originalICONCLASSUri = ICONCLASSUri
-        ICONCLASSUri = 'https://jsontojsonp.gbv.de/?url='  + CUI.encodeURIComponentNicely(ICONCLASSUri) + '.json'
-        growingTimeout = key * 100
-        setTimeout ( ->
-            extendedInfo_xhr = new (CUI.XHR)(url: ICONCLASSUri)
-            extendedInfo_xhr.start()
-            .done((data, status, statusText) ->
-              # shouldnt happen, but: skip, if a record was not found (maybe deleted in DANTE, wrong URI ...)
-              if data?.n
-                # validation-test on data.preferredName (obligatory)
-                if data?.txt
-                  resultsICONCLASSUri = 'http://iconclass.org/' + data.n
+        deferred = new CUI.Deferred()
+        extendedInfo_xhr = new (CUI.XHR)(url: uri)
+        extendedInfo_xhr.start().done((data, status, statusText) ->
+          # shouldnt happen, but: skip, if a record was not found (maybe deleted in iconclass, wrong URI ...)
+          if data?.n
+            # validation-test on data.preferredName (obligatory)
+            if data?.txt
+              resultsUri = 'http://iconclass.org/' + data.n
+              # parse every record of this URI
+              for cdataFromObjectsMap, objectsMapKey in objectsMap[originalUri]
+                cdataFromObjectsMap = cdataFromObjectsMap.data
 
-                  # parse every record of this URI
-                  for cdataFromObjectsMap, objectsMapKey in objectsMap[originalICONCLASSUri]
-                    cdataFromObjectsMap = cdataFromObjectsMap.data
+                # init updated cdata
+                updatedcdata = {}
+                # conceptUri
+                updatedcdata.conceptURI = 'http://iconclass.org/' + data.n
+                # conceptAncestors
+                updatedcdata.conceptAncestors = []
 
-                    # init updated cdata
-                    updatedICONCLASScdata = {}
-                    # conceptUri
-                    updatedICONCLASScdata.conceptURI = 'http://iconclass.org/' + data.n
-                    # conceptAncestors
-                    updatedICONCLASScdata.conceptAncestors = []
+                conceptAncestors = []
+                # if treeview, add ancestors
+                if data?.p?.length > 0
+                  # save ancestor-uris to cdata
+                  for ancestor in data.p
+                    updatedcdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                    # add own uri to ancestor-uris
+                updatedcdata.conceptAncestors.push 'http://iconclass.org/' + data.n
 
-                    conceptAncestors = []
-                    # if treeview, add ancestors
-                    if data?.p?.length > 0
-                      # save ancestor-uris to cdata
-                      for ancestor in data.p
-                        updatedICONCLASScdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
-                        # add own uri to ancestor-uris
-                    updatedICONCLASScdata.conceptAncestors.push 'http://iconclass.org/' + data.n
+                # conceptName
 
-                    # conceptName
+                # change only, if a frontendLanguage is set AND it is not a manually chosen label
+                if cdataFromObjectsMap?.frontendLanguage?.length == 2
+                  updatedcdata.frontendLanguage = cdataFromObjectsMap.frontendLanguage
+                  if cdataFromObjectsMap?.conceptNameChosenByHand == false || ! cdataFromObjectsMap.hasOwnProperty('conceptNameChosenByHand')
+                    updatedcdata.conceptNameChosenByHand = false
+                    if data['txt']
+                      # if a preflabel exists in given frontendLanguage or without language (person / corporate)
+                      if data['txt'][cdataFromObjectsMap.frontendLanguage]
+                        if data['txt']?[cdataFromObjectsMap.frontendLanguage]
+                          updatedcdata.conceptName = data['txt'][cdataFromObjectsMap.frontendLanguage]
 
-                    # change only, if a frontendLanguage is set AND it is not a manually chosen label
-                    if cdataFromObjectsMap?.frontendLanguage?.length == 2
-                      updatedICONCLASScdata.frontendLanguage = cdataFromObjectsMap.frontendLanguage
-                      if cdataFromObjectsMap?.conceptNameChosenByHand == false || ! cdataFromObjectsMap.hasOwnProperty('conceptNameChosenByHand')
-                        updatedICONCLASScdata.conceptNameChosenByHand = false
-                        if data['txt']
-                          # if a preflabel exists in given frontendLanguage or without language (person / corporate)
-                          if data['txt'][cdataFromObjectsMap.frontendLanguage]
-                            if data['txt']?[cdataFromObjectsMap.frontendLanguage]
-                              updatedICONCLASScdata.conceptName = data['txt'][cdataFromObjectsMap.frontendLanguage]
-
-                    # if no conceptName is given yet (f.e. via scripted imports..)
-                    #   --> choose a label and prefer the configured default language
-                    if ! updatedICONCLASScdata?.conceptName
-                      # defaultLanguage given?
-                      if defaultLanguage
-                        if data['txt']?[defaultLanguage]
-                          updatedICONCLASScdata.conceptName = data['txt'][defaultLanguage]
-                      else
-                        if data.txt?.de
-                          updatedICONCLASScdata.conceptName = data.txt.de
-                        else if data.txt?.en
-                          updatedICONCLASScdata.conceptName = data.txt.en
-                        else
-                          updatedICONCLASScdata.conceptName = data.txt[Object.keys(data.txt)[0]]
-
-                    updatedICONCLASScdata.conceptName = data.n + ' - ' + updatedICONCLASScdata.conceptName
-
-                    # _standard & _fulltext
-                    updatedICONCLASScdata._standard = ez5.IconclassUtil.getStandardTextFromObject null, data, cdataFromObjectsMap, databaseLanguages
-                    updatedICONCLASScdata._fulltext = ez5.IconclassUtil.getFullTextFromObject data, databaseLanguages
-
-                    # aggregate in objectsMap
-                    if not that.__hasChanges(objectsMap[originalICONCLASSUri][objectsMapKey].data, updatedICONCLASScdata)
-                      continue
+                # if no conceptName is given yet (f.e. via scripted imports..)
+                #   --> choose a label and prefer the configured default language
+                if ! updatedcdata?.conceptName
+                  # defaultLanguage given?
+                  if defaultLanguage
+                    if data['txt']?[defaultLanguage]
+                      updatedcdata.conceptName = data['txt'][defaultLanguage]
+                  else
+                    if data.txt?.de
+                      updatedcdata.conceptName = data.txt.de
+                    else if data.txt?.en
+                      updatedcdata.conceptName = data.txt.en
                     else
-                      objectsMap[originalICONCLASSUri][objectsMapKey].data = updatedICONCLASScdata
-                      objectsToUpdate.push(objectsMap[originalICONCLASSUri][objectsMapKey])
-            )
-            .fail ((data, status, statusText) ->
-              ez5.respondError("custom.data.type.iconclass.update.error.generic", {searchQuery: searchQuery, error: "Error connecting to Iconclass"})
-            )
-            .always =>
-              xhrPromises[key].resolve()
-              xhrPromises[key].promise()
-        ), growingTimeout
+                      updatedcdata.conceptName = data.txt[Object.keys(data.txt)[0]]
 
-    CUI.whenAll(xhrPromises).done( =>
-      ez5.respondSuccess({payload: objectsToUpdate})
+                updatedcdata.conceptName = data.n + ' - ' + updatedcdata.conceptName
+
+                # _standard & _fulltext
+                updatedcdata._standard = ez5.IconclassUtil.getStandardTextFromObject null, data, cdataFromObjectsMap, databaseLanguages
+                updatedcdata._fulltext = ez5.IconclassUtil.getFullTextFromObject data, databaseLanguages
+
+                # aggregate in objectsMap
+                if that.__hasChanges(objectsMap[originalUri][objectsMapKey].data, updatedcdata)
+                  objectsMap[originalUri][objectsMapKey].data = updatedcdata
+                  objectsToUpdate.push(objectsMap[originalUri][objectsMapKey])
+          deferred.resolve()
+        ).fail( =>
+         deferred.reject()
+        )
+        return deferred.promise()
+    )
+
+    chunkWorkPromise.done(=>
+     ez5.respondSuccess({payload: objectsToUpdate})
+    ).fail(=>
+     ez5.respondError("custom.data.type.iconclass.update.error.generic", {error: "Error connecting to Iconclass"})
     )
 
   __hasChanges: (objectOne, objectTwo) ->
