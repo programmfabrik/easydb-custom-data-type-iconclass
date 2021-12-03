@@ -183,31 +183,86 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                 menu_items.push item
             # create new menu with suggestions
             itemList =
+              # choose record from suggestions
               onClick: (ev2, btn) ->
                   iconclassInfo = btn.getOpt("value")
 
-                  cdata.conceptAncestors = []
-                  # if treeview, add ancestors
-                  if iconclassInfo?.p?.length > 0
-                    # save ancestor-uris to cdata
-                    for ancestor in iconclassInfo.p
-                      cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
-                  # add own uri to ancestor-uris
-                  cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                  ###############################################
+                  # brackets with dots provided?
+                  ###############################################
+                  if iconclassInfo.n.includes '(...)'
+                    # open popup and force user to input bracketsvalue
+                    # Example: 25G4(...)
+                    CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + cdata.conceptURI + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
+                    .done (input) =>
+                      inputUpperCase = input.toUpperCase()
+                      inputLowerCase = input.toLowerCase()
 
-                  # lock conceptURI in savedata
-                  cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
-                  # lock conceptFulltext in savedata
-                  cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
-                  # lock standard in savedata
-                  cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+                      # replace in notation
+                      iconclassInfo.n = iconclassInfo.n.replace('(...)', "(" + inputUpperCase + ")")
+                      # replace in labels
+                      for iconclassLabelKey, iconclassLabelValue of iconclassInfo.txt
+                        newLabel = iconclassLabelValue
+                        newLabel = newLabel.replace(" (mit NAMEN)", ': ' + inputLowerCase)
+                        newLabel = newLabel.replace(" (with NAME)", ': ' + inputLowerCase)
+                        newLabel = newLabel.replace(" (avec NOM)", ': ' + inputLowerCase)
+                        newLabel = newLabel.replace(" (col NOME)", ': ' + inputLowerCase)
+                        newLabel = newLabel.replace(" (NIMEN kanssa)", ': ' + inputLowerCase)
+                        iconclassInfo.txt[iconclassLabelKey] = newLabel
 
-                  # lock conceptName in savedata
-                  cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
+                      # lock conceptURI in savedata
+                      cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
 
-                  # update the layout in form
-                  that.__updateResult(cdata, layout, opts)
-                  @
+                      # lock conceptName in savedata
+                      cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
+
+                      cdata.conceptAncestors = []
+                      # if treeview, add ancestors
+                      if iconclassInfo?.p?.length > 0
+                        # save ancestor-uris to cdata
+                        for ancestor in iconclassInfo.p
+                          cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                      # add own uri to ancestor-uris
+                      cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+
+                      # lock conceptFulltext in savedata
+                      cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                      # lock standard in savedata
+                      cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+
+                      # update the layout in form
+                      that.__updateResult(cdata, layout, opts)
+                      @
+                    .fail =>
+                      cdata = {}
+                      that.__updateResult(cdata, layout, opts)
+                      @
+                  ###############################################
+                  # if no bracketsvalue in chosen record
+                  ###############################################
+                  else
+                    # lock conceptURI in savedata
+                    cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+
+                    # lock conceptName in savedata
+                    cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
+
+                    cdata.conceptAncestors = []
+                    # if treeview, add ancestors
+                    if iconclassInfo?.p?.length > 0
+                      # save ancestor-uris to cdata
+                      for ancestor in iconclassInfo.p
+                        cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                    # add own uri to ancestor-uris
+                    cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+
+                    # lock conceptFulltext in savedata
+                    cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                    # lock standard in savedata
+                    cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+
+                    that.__updateResult(cdata, layout, opts)
+                    @
 
               items: menu_items
 

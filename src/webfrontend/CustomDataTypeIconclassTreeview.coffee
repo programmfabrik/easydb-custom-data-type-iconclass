@@ -203,30 +203,88 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               # build save data
                               iconclassInfo = that.additionalOpts.iconclassInfo
 
-                              that.cdata.conceptAncestors = []
-                              # if treeview, add ancestors
-                              if iconclassInfo?.p?.length > 0
-                                # save ancestor-uris to cdata
-                                for ancestor in iconclassInfo.p
-                                  that.cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
-                              # add own uri to ancestor-uris
-                              that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                              ###############################################
+                              # brackets with dots provided?
+                              ###############################################
+                              if iconclassInfo.n.includes '(...)'
+                                # open popup and force user to input bracketsvalue
+                                # Example: 25G4(...)
+                                CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + that.cdata.conceptURI + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
+                                .done (input) =>
+                                  inputUpperCase = input.toUpperCase()
+                                  inputLowerCase = input.toLowerCase()
+                                  that.cdata.conceptName = that.cdata.conceptName.replace('(...)', "(" + inputUpperCase + ")")
+                                  # replace in notation
+                                  iconclassInfo.n = iconclassInfo.n.replace('(...)', "(" + inputUpperCase + ")")
+                                  # replace in labels
+                                  for iconclassLabelKey, iconclassLabelValue of iconclassInfo.txt
+                                    newLabel = iconclassLabelValue
+                                    newLabel = newLabel.replace(" (mit NAMEN)", ': ' + inputLowerCase)
+                                    newLabel = newLabel.replace(" (with NAME)", ': ' + inputLowerCase)
+                                    newLabel = newLabel.replace(" (avec NOM)", ': ' + inputLowerCase)
+                                    newLabel = newLabel.replace(" (col NOME)", ': ' + inputLowerCase)
+                                    newLabel = newLabel.replace(" (NIMEN kanssa)", ': ' + inputLowerCase)
+                                    iconclassInfo.txt[iconclassLabelKey] = newLabel
 
-                              console.warn @, that, iconclassInfo
-                              # lock conceptURI in savedata
-                              that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
-                              # lock conceptFulltext in savedata
-                              that.cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
-                              # lock standard in savedata
-                              that.cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that.context, iconclassInfo, that.cdata, false
+                                  # lock conceptURI in savedata
+                                  that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
 
-                              # lock conceptName in savedata
-                              that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
+                                  # lock conceptName in savedata
+                                  that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
 
-                              # update form
-                              CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)
-                              # hide popover
-                              that.popover.hide()
+                                  that.cdata.conceptAncestors = []
+                                  # if treeview, add ancestors
+                                  if iconclassInfo?.p?.length > 0
+                                    # save ancestor-uris to cdata
+                                    for ancestor in iconclassInfo.p
+                                      that.cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                                  # add own uri to ancestor-uris
+                                  that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+
+                                  # lock conceptFulltext in savedata
+                                  that.cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                                  # lock standard in savedata
+                                  that.cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that.context, iconclassInfo, that.cdata, false
+
+                                  # update the layout in form
+                                  CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)
+                                  # hide popover
+                                  that.popover.hide()
+                                  @
+                                .fail =>
+                                  cdata = {}
+                                  CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)
+                                  # hide popover
+                                  that.popover.hide()
+                                  @
+                              ###############################################
+                              # if no bracketsvalue in chosen record
+                              ###############################################
+                              else
+                                # lock conceptURI in savedata
+                                that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+
+                                # lock conceptName in savedata
+                                that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
+
+                                that.cdata.conceptAncestors = []
+                                # if treeview, add ancestors
+                                if iconclassInfo?.p?.length > 0
+                                  # save ancestor-uris to cdata
+                                  for ancestor in iconclassInfo.p
+                                    that.cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                                # add own uri to ancestor-uris
+                                that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+
+                                # lock conceptFulltext in savedata
+                                that.cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                                # lock standard in savedata
+                                that.cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that.context, iconclassInfo, that.cdata, false
+
+                                CustomDataTypeIconclass.prototype.__updateResult(that.cdata, that.editor_layout, that.iconclass_opts)
+                                # hide popover
+                                that.popover.hide()
+                                @
 
         plusButton.setEnabled(true)
 
