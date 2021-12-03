@@ -213,6 +213,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
 
                       # lock conceptURI in savedata
                       cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                      cdata.frontendLanguage = activeFrontendLanguage
 
                       # lock conceptName in savedata
                       cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
@@ -244,6 +245,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   else
                     # lock conceptURI in savedata
                     cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                    cdata.frontendLanguage = activeFrontendLanguage
 
                     # lock conceptName in savedata
                     cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata

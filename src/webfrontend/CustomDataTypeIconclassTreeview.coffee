@@ -192,6 +192,8 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
         icon = 'fa-plus-circle'
         tooltipText = $$('custom.data.type.iconclass.modal.form.popup.add_choose')
 
+        activeFrontendLanguage = CustomDataTypeIconclass.prototype.getFrontendLanguage()
+
         plusButton =  new CUI.Button
                             text: ""
                             icon_left: new CUI.Icon(class: icon)
@@ -229,6 +231,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
 
                                   # lock conceptURI in savedata
                                   that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                                  that.cdata.frontendLanguage = activeFrontendLanguage
 
                                   # lock conceptName in savedata
                                   that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata
@@ -264,6 +267,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               else
                                 # lock conceptURI in savedata
                                 that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                                that.cdata.frontendLanguage = activeFrontendLanguage
 
                                 # lock conceptName in savedata
                                 that.cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, that.cdata

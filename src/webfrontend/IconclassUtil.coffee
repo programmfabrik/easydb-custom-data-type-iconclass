@@ -38,7 +38,6 @@ class ez5.IconclassUtil
     return html
 
   @getConceptNameFromObject: (object, cdata) ->
-
     if cdata?.frontendLanguage
         if cdata?.frontendLanguage?.length == 2
           activeFrontendLanguage = cdata.frontendLanguage
@@ -111,7 +110,7 @@ class ez5.IconclassUtil
       if object.txt[shortenedLanguage]
         l10nObject[l10nObjectKey] = object.n + ' - ' + object.txt[shortenedLanguage]
 
-    _standard.l10ntext = l10nObject    
+    _standard.l10ntext = l10nObject
 
     return _standard
 
