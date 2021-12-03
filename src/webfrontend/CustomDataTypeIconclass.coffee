@@ -193,7 +193,8 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   if iconclassInfo.n.includes '(...)'
                     # open popup and force user to input bracketsvalue
                     # Example: 25G4(...)
-                    CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + cdata.conceptURI + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
+                    chosenTempUri = 'http://iconclass.org/' + iconclassInfo.n
+                    CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + chosenTempUri + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
                     .done (input) =>
                       inputUpperCase = input.toUpperCase()
                       inputLowerCase = input.toLowerCase()
