@@ -76,14 +76,16 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
       filter =
           type: "complex"
           search: [
-              type: "in"
+              type: "match"
               bool: "must"
+              mode: "token"
+              phrase: false
               fields: [ @path() + '.' + @name() + ".conceptAncestors" ]
           ]
       if ! data[@name()]
-          filter.search[0].in = [ null ]
+          filter.search[0].string = null
       else if data[@name()]?.conceptURI
-          filter.search[0].in = [data[@name()].conceptURI]
+          filter.search[0].string = data[@name()].conceptURI
       else
           filter = null
 
@@ -143,9 +145,9 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
             # abort eventually running request
             searchsuggest_xhr.xhr.abort()
 
-        searchUrl = 'https://jsontojsonp.gbv.de/?url=http%3A%2F%2Ficonclass.org%2Frkd%2F1%2F%3Fq%3D' + encodeURIComponent(input_searchstring) + '%26q_s%3D1%26fmt%3Djson'
+        searchUrl = 'https://jsontojsonp.gbv.de/?url=https%3A%2F%2Ficonclass.org%2Frkd%2F1%2F%3Fq%3D' + encodeURIComponent(input_searchstring) + '%26q_s%3D1%26fmt%3Djson'
         if searchStringIsNotation
-          searchUrl = 'https://jsontojsonp.gbv.de/?url=http%3A%2F%2Ficonclass.org%2F' + encodeURIComponent(input_searchstring) + '.json'
+          searchUrl = 'https://jsontojsonp.gbv.de/?url=https%3A%2F%2Ficonclass.org%2F' + encodeURIComponent(input_searchstring) + '.json'
 
         activeFrontendLanguage = that.getFrontendLanguage()
 
@@ -168,7 +170,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                 else
                   suggestionsLabel = suggestion.txt.de
                 suggestionsLabel = suggestion.n + ' - ' + suggestionsLabel
-                suggestionsURI = 'http://iconclass.org/' + suggestion.n
+                suggestionsURI = 'https://iconclass.org/' + suggestion.n
                 item =
                   text: suggestionsLabel
                   value: suggestion
@@ -193,7 +195,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   if iconclassInfo.n.includes '(...)'
                     # open popup and force user to input bracketsvalue
                     # Example: 25G4(...)
-                    chosenTempUri = 'http://iconclass.org/' + iconclassInfo.n
+                    chosenTempUri = 'https://iconclass.org/' + iconclassInfo.n
                     CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + chosenTempUri + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
                     .done (input) =>
                       inputUpperCase = input.toUpperCase()
@@ -212,7 +214,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                         iconclassInfo.txt[iconclassLabelKey] = newLabel
 
                       # lock conceptURI in savedata
-                      cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                      cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
                       cdata.frontendLanguage = activeFrontendLanguage
 
                       # lock conceptName in savedata
@@ -223,9 +225,11 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                       if iconclassInfo?.p?.length > 0
                         # save ancestor-uris to cdata
                         for ancestor in iconclassInfo.p
-                          cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                          cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
                       # add own uri to ancestor-uris
-                      cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                      cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+
+                      cdata.conceptAncestors = cdata.conceptAncestors.join(' ')
 
                       # lock conceptFulltext in savedata
                       cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
@@ -244,7 +248,7 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                   ###############################################
                   else
                     # lock conceptURI in savedata
-                    cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                    cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
                     cdata.frontendLanguage = activeFrontendLanguage
 
                     # lock conceptName in savedata
@@ -255,9 +259,11 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                     if iconclassInfo?.p?.length > 0
                       # save ancestor-uris to cdata
                       for ancestor in iconclassInfo.p
-                        cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                        cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
                     # add own uri to ancestor-uris
-                    cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                    cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+
+                    cdata.conceptAncestors = cdata.conceptAncestors.join(' ')
 
                     # lock conceptFulltext in savedata
                     cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false

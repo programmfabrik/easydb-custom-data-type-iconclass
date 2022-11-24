@@ -51,12 +51,15 @@ class Iconclass_ListViewTree
         topTree_xhr = { "xhr" : undefined }
 
         # start new request to DANTE-API
-        url = 'https://jsontojsonp.gbv.de/?url=' + encodeURIComponent('http://iconclass.org/json/?notation=1&notation=2&notation=3&notation=4&notation=5&notation=6&notation=7&notation=8&notation=9')
+        url = 'https://jsontojsonp.gbv.de/?url=' + encodeURIComponent('https://iconclass.org/json/?notation=1&notation=2&notation=3&notation=4&notation=5&notation=6&notation=7&notation=8&notation=9')
         topTree_xhr.xhr = new (CUI.XHR)(url: url)
         topTree_xhr.xhr.start().done((data, status, statusText) ->
           # remove loading row (if there is one)
           if that.treeview.getRow(0)
             that.treeview.removeRow(0)
+
+          if data?.result
+            data = data.result
 
           # add lines from request
           for iconclassEntry, key in data
@@ -76,7 +79,7 @@ class Iconclass_ListViewTree
                 selectable: false
               ,
                 prefLabel: prefLabel
-                uri: 'http://iconclass.org/' + iconclassEntry.n
+                uri: 'https://iconclass.org/' + iconclassEntry.n
                 iconclassInfo: iconclassEntry
                 hasNarrowers: hasNarrowers
                 popover: that.popover
@@ -135,10 +138,13 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
           notationsString = notationsString + '&notation=' + encodeURIComponent(notation)
 
         # get infos for all the children at once
-        url = 'https://jsontojsonp.gbv.de/?url=' + encodeURIComponent('http://iconclass.org/json/?' + notationsString);
+        url = 'https://jsontojsonp.gbv.de/?url=' + encodeURIComponent('https://iconclass.org/json/?' + notationsString);
         getChildren_xhr ={ "xhr" : undefined }
         getChildren_xhr.xhr = new (CUI.XHR)(url: url)
         getChildren_xhr.xhr.start().done((data, status, statusText) ->
+          if data?.result
+            data = data.result
+
           for iconclassEntry, key in data
             if iconclassEntry?.txt[@activeFrontendLanguage]
               prefLabel = iconclassEntry?.txt[@activeFrontendLanguage]
@@ -156,7 +162,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                 selectable: false
               ,
                 prefLabel: prefLabel
-                uri: 'http://iconclass.org/' + iconclassEntry.n
+                uri: 'https://iconclass.org/' + iconclassEntry.n
                 hasNarrowers: hasNarrowers
                 popover: that.popover
                 cdata: that.cdata
@@ -211,7 +217,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               if iconclassInfo.n.includes '(...)'
                                 # open popup and force user to input bracketsvalue
                                 # Example: 25G4(...)
-                                chosenTempUri = 'http://iconclass.org/' + iconclassInfo.n
+                                chosenTempUri = 'https://iconclass.org/' + iconclassInfo.n
                                 CUI.prompt(text: $$('custom.data.type.iconclass.modal.form.popup.brackets.select') + " " + chosenTempUri + "\n\n" + $$('custom.data.type.iconclass.modal.form.popup.brackets.choose'), "1")
                                 .done (input) =>
                                   inputUpperCase = input.toUpperCase()
@@ -230,7 +236,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                                     iconclassInfo.txt[iconclassLabelKey] = newLabel
 
                                   # lock conceptURI in savedata
-                                  that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                                  that.cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
                                   that.cdata.frontendLanguage = activeFrontendLanguage
 
                                   # lock conceptName in savedata
@@ -241,9 +247,11 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                                   if iconclassInfo?.p?.length > 0
                                     # save ancestor-uris to cdata
                                     for ancestor in iconclassInfo.p
-                                      that.cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                                      that.cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
                                   # add own uri to ancestor-uris
-                                  that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                                  that.cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+                                  # make string from ancestors-array
+                                  that.cdata.conceptAncestors = that.cdata.conceptAncestors.join(' ')
 
                                   # lock conceptFulltext in savedata
                                   that.cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
@@ -266,7 +274,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                               ###############################################
                               else
                                 # lock conceptURI in savedata
-                                that.cdata.conceptURI = 'http://iconclass.org/' + iconclassInfo.n
+                                that.cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
                                 that.cdata.frontendLanguage = activeFrontendLanguage
 
                                 # lock conceptName in savedata
@@ -277,9 +285,11 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                                 if iconclassInfo?.p?.length > 0
                                   # save ancestor-uris to cdata
                                   for ancestor in iconclassInfo.p
-                                    that.cdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                                    that.cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
                                 # add own uri to ancestor-uris
-                                that.cdata.conceptAncestors.push 'http://iconclass.org/' + iconclassInfo.n
+                                that.cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+
+                                that.cdata.conceptAncestors = that.cdata.conceptAncestors.join(' ')
 
                                 # lock conceptFulltext in savedata
                                 that.cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
@@ -307,7 +317,6 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                           content: (tooltip) ->
                             # show infopopup
                             encodedURI = encodeURIComponent(that.uri)
-                            console.warn encodedURI
                             CustomDataTypeIconclass.prototype.__getAdditionalTooltipInfo(encodedURI, tooltip, extendedInfo_xhr, that.context)
                             new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
         buttons.push(infoButton)

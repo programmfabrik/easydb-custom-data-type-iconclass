@@ -2,7 +2,7 @@ class iconclassUpdate
 
   __start_update: ({server_config, plugin_config}) ->
       # Check if Iconclass-API is fully available. This will take at least 10 seconds. Dont panic.
-      testURL = 'https://jsontojsonp.gbv.de/?url=http%3A%2F%2Ficonclass.org%2F1.json'
+      testURL = 'https://jsontojsonp.gbv.de/?url=https%3A%2F%2Ficonclass.org%2F1.json'
       availabilityCheck_xhr = new (CUI.XHR)(url: testURL)
       availabilityCheck_xhr.start()
       .done((data, status, statusText) ->
@@ -63,7 +63,9 @@ class iconclassUpdate
         uri = items[0]
         #console.error "uri", uri
         originalUri = items[0]
-        uriEncoded = uri.replace(/ /g, "%20")
+        uriEncoded = uri.replace('http%3A', 'https%3A')
+        uriEncoded = uriEncoded.replace('http:', 'https:')
+        uriEncoded = uriEncoded.replace(/ /g, "%20")
         uriEncoded = uriEncoded.replace(/,/g, "%2C")
         uri = 'https://jsontojsonp.gbv.de/?url='  + CUI.encodeURIComponentNicely(uriEncoded) + '.json'
 
@@ -74,7 +76,7 @@ class iconclassUpdate
           if data?.n
             # validation-test on data.preferredName (obligatory)
             if data?.txt
-              resultsUri = 'http://iconclass.org/' + data.n
+              resultsUri = 'https://iconclass.org/' + data.n
               # parse every record of this URI
               for cdataFromObjectsMap, objectsMapKey in objectsMap[originalUri]
                 cdataFromObjectsMap = cdataFromObjectsMap.data
@@ -82,7 +84,7 @@ class iconclassUpdate
                 # init updated cdata
                 updatedcdata = {}
                 # conceptUri
-                updatedcdata.conceptURI = 'http://iconclass.org/' + data.n
+                updatedcdata.conceptURI = 'https://iconclass.org/' + data.n
                 # conceptAncestors
                 updatedcdata.conceptAncestors = []
 
@@ -91,9 +93,12 @@ class iconclassUpdate
                 if data?.p?.length > 0
                   # save ancestor-uris to cdata
                   for ancestor in data.p
-                    updatedcdata.conceptAncestors.push 'http://iconclass.org/' + ancestor
+                    updatedcdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
                     # add own uri to ancestor-uris
-                updatedcdata.conceptAncestors.push 'http://iconclass.org/' + data.n
+                updatedcdata.conceptAncestors.push 'https://iconclass.org/' + data.n
+
+                conceptAncestorsString = updatedcdata.conceptAncestors.join(' ')
+                updatedcdata.conceptAncestors = conceptAncestorsString
 
                 # conceptName
 
