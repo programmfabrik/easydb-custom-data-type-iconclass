@@ -1,6 +1,6 @@
 plugin:
   name: custom-data-type-iconclass
-  version: 0.1
+  version: 1
   url: https://github.com/programmfabrik/easydb-custom-data-type-iconclass
   displayname:
     de-DE: Iconclass-Verknüpfung

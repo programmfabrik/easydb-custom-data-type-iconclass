@@ -316,8 +316,7 @@ class Iconclass_ListViewTreeNode extends CUI.ListViewTreeNode
                           placement: "e"
                           content: (tooltip) ->
                             # show infopopup
-                            encodedURI = encodeURIComponent(that.uri)
-                            CustomDataTypeIconclass.prototype.__getAdditionalTooltipInfo(encodedURI, tooltip, extendedInfo_xhr, that.context)
+                            CustomDataTypeIconclass.prototype.__getAdditionalTooltipInfo(that.uri, tooltip, extendedInfo_xhr, that.context)
                             new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
         buttons.push(infoButton)
 

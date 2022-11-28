@@ -15,7 +15,7 @@ class ez5.IconclassUtil
     else
       prefLabel = data?.txt?.de
 
-    xuri = 'http://iconclass.org/' + data.n
+    xuri = 'https://iconclass.org/' + data.n
 
     html += '<div style="font-size: 12px; color: #999;"><span class="cui-label-icon"><i class="fa  fa-external-link"></i></span>&nbsp;' + xuri + '</div>'
 
@@ -175,7 +175,7 @@ class ez5.IconclassUtil
               if typeof objectValue == 'string'
                 fullTextString += objectValue + ' '
                 # check key and also add to l10n
-                if l10nObjectWithShortenedLanguages[objectKey]
+                if l10nObjectWithShortenedLanguages.hasOwnProperty objectKey
                   l10nObjectWithShortenedLanguages[objectKey] += objectValue + ' '
     # finally give l10n-languages the easydb-language-syntax
     for l10nObjectKey, l10nObjectValue of l10nObject
