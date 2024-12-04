@@ -163,48 +163,87 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
               if data.length != 0
                 data = [data]
             menu_items = []
-            for suggestion, key in data
-              do(key) ->
-                if searchStringIsNotation
-                  # get label in users frontendLanguage
-                  if suggestion.txt[activeFrontendLanguage]
-                    suggestionsLabel = suggestion.txt[activeFrontendLanguage]
-                  else
-                    suggestionsLabel = suggestion.txt.de
-                  suggestionsLabel = suggestion.n + ' - ' + suggestionsLabel
-                  suggestionsURI = 'https://iconclass.org/' + suggestion.n
-                  item =
-                    text: suggestionsLabel
-                    value: suggestion
-                    tooltip:
-                      markdown: true
-                      placement: "ne"
-                      content: (tooltip) ->
-                        # show infopopup
-                        that.__getAdditionalTooltipInfo(suggestionsURI, tooltip, extendedInfo_xhr)
-                        new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
-                  menu_items.push item
-                if !searchStringIsNotation
-                  suggestionsURI = 'https://iconclass.org/' + suggestion
-                  item =
-                    text: suggestion
-                    value: suggestion
-                    tooltip:
-                      markdown: true
-                      placement: "ne"
-                      content: (tooltip) ->
-                        # show infopopup
-                        that.__getAdditionalTooltipInfo(suggestionsURI, tooltip, extendedInfo_xhr)
-                        new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
-                  menu_items.push item
+            if data
+              for suggestion, key in data
+                do(key) ->
+                  if JSON.stringify(suggestion) != '{}'
+                    if searchStringIsNotation
+                      # get label in users frontendLanguage
+                      if suggestion.txt[activeFrontendLanguage]
+                        suggestionsLabel = suggestion.txt[activeFrontendLanguage]
+                      else
+                        suggestionsLabel = suggestion.txt.de
+                      suggestionsLabel = suggestion.n + ' - ' + suggestionsLabel
+                      suggestionsURI = 'https://iconclass.org/' + suggestion.n
+                      item =
+                        text: suggestionsLabel
+                        value: suggestion
+                        tooltip:
+                          markdown: true
+                          placement: "ne"
+                          content: (tooltip) ->
+                            # show infopopup
+                            that.__getAdditionalTooltipInfo(suggestionsURI, tooltip, extendedInfo_xhr)
+                            new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
+                      menu_items.push item
+                    if !searchStringIsNotation
+                      suggestionsURI = 'https://iconclass.org/' + suggestion
+                      item =
+                        text: suggestion
+                        value: suggestion
+                        tooltip:
+                          markdown: true
+                          placement: "ne"
+                          content: (tooltip) ->
+                            # show infopopup
+                            that.__getAdditionalTooltipInfo(suggestionsURI, tooltip, extendedInfo_xhr)
+                            new CUI.Label(icon: "spinner", text: $$('custom.data.type.iconclass.modal.form.popup.loadingstring'))
+                      menu_items.push item
             # create new menu with suggestions
             itemList =
               # choose record from suggestions
               onClick: (ev2, btn) ->
                   iconclassInfo = btn.getOpt("value")
 
+                  ##############################################
+                  # only notation given by api
+                  ##############################################
+                  if ! iconclassInfo?.n
+                    # lock conceptURI in savedata
+                    cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo
+                    cdata.frontendLanguage = activeFrontendLanguage
+
+                    fullInfoUrl = cdata.conceptURI + '.json'
+                    # download full record from iconclass
+                    searchsuggest_xhr.xhr = new (CUI.XHR)(url: fullInfoUrl)
+                    searchsuggest_xhr.xhr.start().done((data, status, statusText) ->
+                        extendedInfo_xhr = { "xhr" : undefined }
+                        iconclassInfo = data
+                        # lock conceptName in savedata
+                        cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
+
+                        cdata.conceptAncestors = []
+                        # if treeview, add ancestors
+                        if iconclassInfo?.p?.length > 0
+                          # save ancestor-uris to cdata
+                          for ancestor in iconclassInfo.p
+                            cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
+                        # add own uri to ancestor-uris
+                        cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+
+                        cdata.conceptAncestors = cdata.conceptAncestors.join(' ')
+
+                        # lock conceptFulltext in savedata
+                        cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                        # lock standard in savedata
+                        cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+
+                        that.__updateResult(cdata, layout, opts)
+                        return @
+                    )
+
                   ###############################################
-                  # brackets with dots provided?
+                  # as OBJECT. brackets with dots provided?
                   ###############################################
                   if iconclassInfo?.n
                     if iconclassInfo.n.includes '(...)'
@@ -257,45 +296,44 @@ class CustomDataTypeIconclass extends CustomDataTypeWithCommons
                       .fail =>
                         cdata = {}
                         that.__updateResult(cdata, layout, opts)
-                        @
-                  ###############################################
-                  # if no bracketsvalue in chosen record
-                  ###############################################
-                  else
-                    # lock conceptURI in savedata
-                    if iconclassInfo?.n
-                      cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
+                        return @
+                    ###############################################
+                    # if no bracketsvalue in chosen record
+                    ###############################################
                     else
-                      cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo
-                    cdata.frontendLanguage = activeFrontendLanguage
+                      # lock conceptURI in savedata
+                      if iconclassInfo?.n
+                        cdata.conceptURI = 'https://iconclass.org/' + iconclassInfo.n
 
-                    fullInfoUrl = 'https://iconclass.org/' + iconclassInfo + '.json'
-                    # download full record from iconclass
-                    searchsuggest_xhr.xhr = new (CUI.XHR)(url: fullInfoUrl)
-                    searchsuggest_xhr.xhr.start().done((data, status, statusText) ->
-                        extendedInfo_xhr = { "xhr" : undefined }
-                        iconclassInfo = data
-                        # lock conceptName in savedata
-                        cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
+                      cdata.frontendLanguage = activeFrontendLanguage
 
-                        cdata.conceptAncestors = []
-                        # if treeview, add ancestors
-                        if iconclassInfo?.p?.length > 0
-                          # save ancestor-uris to cdata
-                          for ancestor in iconclassInfo.p
-                            cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
-                        # add own uri to ancestor-uris
-                        cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
+                      fullInfoUrl = cdata.conceptURI + '.json'
+                      # download full record from iconclass
+                      searchsuggest_xhr.xhr = new (CUI.XHR)(url: fullInfoUrl)
+                      searchsuggest_xhr.xhr.start().done((data, status, statusText) ->
+                          extendedInfo_xhr = { "xhr" : undefined }
+                          iconclassInfo = data
+                          # lock conceptName in savedata
+                          cdata.conceptName = ez5.IconclassUtil.getConceptNameFromObject iconclassInfo, cdata
 
-                        cdata.conceptAncestors = cdata.conceptAncestors.join(' ')
+                          cdata.conceptAncestors = []
+                          # if treeview, add ancestors
+                          if iconclassInfo?.p?.length > 0
+                            # save ancestor-uris to cdata
+                            for ancestor in iconclassInfo.p
+                              cdata.conceptAncestors.push 'https://iconclass.org/' + ancestor
+                          # add own uri to ancestor-uris
+                          cdata.conceptAncestors.push 'https://iconclass.org/' + iconclassInfo.n
 
-                        # lock conceptFulltext in savedata
-                        cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
-                        # lock standard in savedata
-                        cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+                          cdata.conceptAncestors = cdata.conceptAncestors.join(' ')
 
-                        that.__updateResult(cdata, layout, opts)
-                        @
+                          # lock conceptFulltext in savedata
+                          cdata._fulltext = ez5.IconclassUtil.getFullTextFromObject iconclassInfo, false
+                          # lock standard in savedata
+                          cdata._standard = ez5.IconclassUtil.getStandardTextFromObject that, iconclassInfo, cdata, false
+
+                          that.__updateResult(cdata, layout, opts)
+                          return @
                     )
               items: menu_items
 
